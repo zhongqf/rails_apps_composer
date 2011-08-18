@@ -40,6 +40,30 @@ module RailsWizard
         puts recipe.key.ljust(15) + "# #{recipe.description}"
       end
     end
+    
+    desc "save FILENAME", "save template file"
+    method_option :recipes, :type => :array, :aliases => "-r"
+    def save(filename)
+      if options[:recipes]
+        save_template(filename, options[:recipes])
+      else
+        @recipes = []
+
+        while recipe = ask("#{print_recipes}#{bold}Which recipe would you like to add? #{clear}#{yellow}(blank to finish)#{clear}")
+          if recipe == ''
+            save_template(filename, @recipes)
+            break
+          elsif RailsWizard::Recipes.list.include?(recipe)
+            @recipes << recipe
+            puts
+            puts "> #{green}Added '#{recipe}' to template.#{clear}"
+          else
+            puts
+            puts "> #{red}Invalid recipe, please try again.#{clear}"
+          end
+        end
+      end
+    end
 
     no_tasks do
       def cyan; "\033[36m" end
@@ -73,6 +97,20 @@ module RailsWizard
         system "rails new #{name} -m #{file.path} #{template.args.join(' ')}"
       ensure
         file.unlink
+      end
+      
+      def save_template(filename, recipes)
+        puts
+        puts
+        puts "#{bold}Generating and Saving Template..."
+        puts
+        file = File.new(filename, "w") do
+          template = RailsWizard::Template.new(recipes)
+          file.write template.compile
+        end
+        puts "#{bold}Completed."
+        puts 
+        
       end
     end
   end
