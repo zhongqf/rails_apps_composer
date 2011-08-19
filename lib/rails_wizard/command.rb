@@ -103,8 +103,7 @@ module RailsWizard
         puts
         puts
         puts "#{bold}Generating and Saving Template..."
-        puts
-        file = File.new(filename, "w") do
+        File.open(filename, "w") do |file|
           template = RailsWizard::Template.new(recipes)
           file.write template.compile
         end
